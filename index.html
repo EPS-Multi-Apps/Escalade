@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>EPS Escalade – Suivi en direct</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14683a">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mut:#6b6b66;--bd:#dcdad2;
+--r:#e5484d;--j:#f5c542;--v:#4cb86a;--vf:#14683a;box-sizing:border-box;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181a;--card:#222426;--tx:#f0efe9;--mut:#9a9a94;--bd:#3a3c3f}}
+:root[data-theme="dark"]{--bg:#17181a;--card:#222426;--tx:#f0efe9;--mut:#9a9a94;--bd:#3a3c3f}
+*{box-sizing:border-box}
+html,body{margin:0;-webkit-text-size-adjust:100%;touch-action:manipulation}
+button{min-height:44px;-webkit-tap-highlight-color:transparent;user-select:none}
+.nums button{min-height:48px;font-size:1.05rem}
+.pill{min-height:48px;font-size:1rem}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px;max-width:1100px;margin:0 auto}
+h1{font-size:1.4rem;margin:0 0 4px}
+.sub{color:var(--mut);font-size:.9rem;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-size:.82rem}
+.legend span{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:3px 10px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.add{display:flex;gap:8px;margin-bottom:12px}
+input,button{font:inherit;color:var(--tx)}
+input{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;min-width:0}
+.add input{flex:1}
+button{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--mut)}
+.wallwrap{overflow-x:auto;border-radius:12px;border:1px solid var(--bd)}
+.wall{position:relative;height:calc(100vh - 120px);height:calc(100dvh - 120px);min-height:380px;display:flex;min-width:100%;width:max-content;
+background:linear-gradient(to top,var(--r) 0 25%,var(--j) 25% 58.33%,var(--v) 58.33% 83.33%,var(--vf) 83.33% 100%)}
+.wall::after{content:"";position:absolute;inset:0;pointer-events:none;
+background:radial-gradient(circle,rgba(255,255,255,.22) 3px,transparent 4px) 0 0/46px 46px}
+.col{position:relative;width:92px;height:100%;flex:none;border-right:1px dashed rgba(255,255,255,.35)}
+.climber{position:absolute;left:0;right:0;text-align:center;transition:bottom .8s cubic-bezier(.2,.8,.2,1);z-index:2}
+.climber svg{width:48px;height:62px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.tag{display:inline-block;background:rgba(0,0,0,.65);color:#fff;border-radius:6px;padding:1px 6px;font-size:.72rem;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag b{color:#ffd}
+.tick{position:absolute;left:4px;font-size:.68rem;color:#fff;background:rgba(0,0,0,.45);border-radius:4px;padding:0 4px;z-index:1}
+.list{margin-top:14px;display:grid;gap:8px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
+.row .n{flex:1 1 120px;font-weight:600}
+.row .z{font-size:.75rem;color:#fff;border-radius:10px;padding:2px 8px}
+.row input{width:80px;text-align:right}
+.lessons{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.lessons button{border-radius:999px;padding:8px 14px;font-weight:600}
+.lessons button.on{background:var(--vf);border-color:var(--vf);color:#fff}
+.lessons button:disabled{opacity:.4;cursor:not-allowed}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pill{border-radius:999px;padding:8px 14px;font-weight:600}
+.pill small{opacity:.7;margin-left:4px;font-weight:400}
+.pill.ok{background:var(--vf);border-color:var(--vf);color:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal.on{display:flex}
+.sheet{background:var(--card);border:1px solid var(--bd);border-radius:14px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:16px}
+.sheet h2{margin:0 0 2px;font-size:1.2rem}
+.er{display:flex;align-items:center;gap:8px;margin:8px 0}
+.er b{width:64px;font-size:.9rem}
+.nums{display:flex;gap:5px;flex:1}
+.nums button{flex:1;padding:9px 0;font-weight:600}
+.nums button.on{background:var(--vf);border-color:var(--vf);color:#fff}
+.pt{width:52px;text-align:right;font-size:.8rem;color:var(--mut)}
+.essai{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:64px;margin:8px 0;font-size:1.1rem;padding:12px 16px}
+.step{display:flex;align-items:center;gap:10px}
+.step span{min-width:36px;text-align:center;font-size:1.3rem;font-weight:700}
+.step button{width:52px;font-size:1.3rem}
+.bons{display:grid;gap:8px}
+.bons button{display:flex;justify-content:space-between;align-items:center}
+.bons button.on{background:var(--vf);border-color:var(--vf);color:#fff}
+.bons small{opacity:.8}
+.tools{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));opacity:.35;width:40px;padding:0;border-radius:50%;z-index:5}
+textarea{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;font:.75rem ui-monospace,monospace}
+.toast{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.75);color:#fff;border-radius:8px;padding:6px 12px;font-size:.85rem;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60}
+.toast.on{opacity:1}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.empty{color:var(--mut);text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<div class="lessons" id="lessons"></div>
+<div class="wallwrap"><div class="wall" id="wall"></div></div>
+<div class="toast" id="toast"></div>
+<button class="tools" onclick="openT()" title="Sauvegarde">⋯</button>
+<div class="modal" id="modal" onclick="if(event.target===this)closeS()"><div class="sheet" id="sheet"></div></div>
+<script>
+var MAX=600,KEY="eps-escalade-v4",N=["Louise", "Lisa", "Jasmine", "Théo", "Myron", "Eva", "Iban", "Irina", "Esteban", "Camille", "Raphaël", "Maël", "Carmen", "Nathan G.", "Owen", "Luziano", "Lilou", "Alice", "Titouan", "Sacha", "Julie", "Ewen", "Yuna", "Nathan R.", "Ethan", "Chelsy", "Max"],L=[2,3,4,5,6,7,8],ES=7,PTS={1:1,2:2,3:4,4:7,5:10,6:15,7:20},cur=2,rt=false,sel=0,S=[];
+try{S=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(KEY+"-bak")||"[]")}catch(e){try{S=JSON.parse(localStorage.getItem(KEY+"-bak")||"[]")}catch(e2){S=[]}}
+if(!Array.isArray(S)||S.length!==N.length)S=N.map(function(n,i){return{id:i+1,n:n,p:{}}});
+var tt=0;
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.className="on";clearTimeout(tt);tt=setTimeout(function(){t.className=""},1300)}
+function save(){var t=JSON.stringify(S);try{localStorage.setItem(KEY,t);localStorage.setItem(KEY+"-bak",t);toast("✓ Sauvegardé")}catch(e){toast("⚠ Sauvegarde impossible")}}
+var BON=[{n:"Corde molle",pts:10},{n:"Super Grimpe",pts:50},{n:"Double queue de vache",pts:25}];
+var BON5=[{n:"Menottes ou balles de TT",pts:20},{n:"14 prises de mains ou moins",pts:50},{n:"2 grimpes de moins de 5 min",x2:true}];
+function calc(o,l){if(!o)return 0;var B=(l===5?BON5:BON)[o.b],h=o.h*(B&&B.x2?2:1);return Math.min(150,Math.max(0,(o.p-o.m)*h+((B&&B.pts)||0)))}
+function calc5(o){if(!o)return 0;var B=BON5[o.b];return DEG[o.h]*(B&&B.x2?2:1)+((B&&B.pts)||0)}
+var OPT6=[{n:"Super Grimpe",d:"2 dégaines + 1 dégaine − par enchaînement réussi",t:"6 pts / enchaînement"},{n:"Méga Grimpe",d:"1 voie grimpée, 1 désescaladée, 1 grimpée",t:"72 pts"},{n:"Ultra Grimpe",d:"Grimpée, désescaladée, grimpée, désescaladée",t:"106 pts"}];
+function calc6(o){if(!o)return 0;return o.o===0?6*o.n:o.o===1?72:o.o===2?106:0}
+function nes(l){return l===2?7:l===4?5:l===5?3:l===6?1:l===7?3:2}
+var DEG=[0,0,2,5,10,20,35,50];
+function calc4(o){if(!o)return 0;return DEG[o.h]*(o.c===1?2:1)}
+function cl(o){return cur===4?calc4(o):cur===5?calc5(o):calc(o,cur)}
+function need(l){return 1}
+function src(s,l,r){return (r?(s.r||{})[l]:s.p[l])||[]}
+function store(s){if(rt){if(!s.r)s.r={};if(!s.r[cur])s.r[cur]=[];return s.r[cur]}if(!s.p[cur])s.p[cur]=[];return s.p[cur]}
+function lsx(s,l,r){var a=src(s,l,r).slice(0,nes(l)),m=0;a.forEach(function(v){var x=l===2?(PTS[v]||0):(l===4?calc4(v):(l===5?calc5(v):l===6?calc6(v):calc(v,l)));if(l===2)m+=x;else if(x>m)m=x});return Math.min(150,Math.max(0,m))}
+function ls(s,l){return lsx(s,l,rt)}
+function eff(s,l){return Math.max(lsx(s,l,false),lsx(s,l,true))}
+function filled(s,l){var a=src(s,l,rt),c=0,i;if(l===2){for(i=0;i<7;i++)if(a[i])c++}else{for(i=0;i<nes(l);i++)if(a[i]&&(l===6?(a[i].o!=null&&(a[i].o!==0||a[i].n>0)):a[i].h))c++}return c}
+function tot(s){var t=0,top=rt?8:cur;L.forEach(function(l){if(l<=top)t+=eff(s,l)});return t}
+function col(n){return "hsl("+((n*47)%360)+",70%,52%)"}
+function man(c){return '<svg viewBox="0 0 48 62"><path d="M24 22V44M24 28L12 12M24 28L36 10M24 44L14 60M24 44L34 56" stroke="#222" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M24 22V44M24 28L12 12M24 28L36 10M24 44L14 60M24 44L34 56" stroke="'+c+'" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="24" cy="14" r="8" fill="#f2c9a0" stroke="#222" stroke-width="2"/><path d="M15 13a9 9 0 0 1 18 0z" fill="'+c+'" stroke="#222" stroke-width="2"/></svg>'}
+function f(id){return S.filter(function(s){return s.id===id})[0]}
+function render(){
+document.getElementById("lessons").innerHTML=L.map(function(l){return '<button '+(l<=8?'':'disabled ')+'onclick="lec('+l+')">Leçon '+l+'</button>'}).join("");
+var w=document.getElementById("wall");
+if(!w.getAttribute("data-b")){var h="";
+[150,350,500,600].forEach(function(t){h+='<div class="tick" style="bottom:'+(t/MAX*100)+'%">'+t+' m</div>'});
+S.forEach(function(s,i){h+='<div class="col"><div class="climber" style="bottom:0">'+man(col(i+1))+'<br><span class="tag"></span></div></div>'});
+w.innerHTML=h;w.setAttribute("data-b","1")}
+requestAnimationFrame(function(){requestAnimationFrame(function(){var cs=w.querySelectorAll(".climber");
+S.forEach(function(s,i){var t=tot(s),p=Math.max(0,Math.min(MAX,t)),c=cs[i];if(!c)return;
+c.style.bottom="min("+(p/MAX*100)+"%, calc(100% - 92px))";
+c.querySelector(".tag").innerHTML=s.n+' · <b>'+t+'</b>';});});});}
+function lec(l){if(l>8)return;rt=(l===8);cur=l;openList()}
+function openList(){if(rt)cur=8;sel=0;var h='<h2>Leçon '+cur+'</h2><div class="sub">Touche ton prénom</div><div class="pills">';
+h+=S.map(function(s){var d=filled(s,cur)>=need(cur);return '<button class="pill'+(d?' ok':'')+'" onclick="pick('+s.id+')">'+s.n+'<small>'+(filled(s,cur)?ls(s,cur):'')+'</small></button>'}).join("");
+h+='</div><div class="foot"><span></span><button onclick="closeS()">Fermer</button></div>';
+document.getElementById("sheet").innerHTML=h;document.getElementById("modal").className="modal on"}
+function openS(id){
+sel=id;var s=f(id),a=src(s,cur,rt),h='<h2>'+s.n+'</h2><div class="sub">Leçon '+cur+' · hauteur atteinte à chaque essai</div>';
+for(var e=0;e<ES;e++){h+='<div class="er"><b>Essai '+(e+1)+'</b><div class="nums">';
+for(var k=1;k<=7;k++)h+='<button class="'+(a[e]===k?'on':'')+'" onclick="setE('+e+','+k+')">'+k+'</button>';
+h+='</div><span class="pt">'+(a[e]?PTS[a[e]]+' pts':'')+'</span></div>'}
+h+='<div class="foot"><span>Total : <b>'+ls(s,cur)+'</b></span><button onclick="openList()">Valider</button></div>';
+document.getElementById("sheet").innerHTML=h;document.getElementById("modal").className="modal on"}
+function setE(e,k){var s=f(sel);var a=store(s);a[e]=(a[e]===k?null:k);save();render();openS(sel)}
+function launch(id){if(cur===2)openS(id);else if(cur===6){sel=id;openE(0)}else open3(id)}
+function pick(id){if(cur===8)openR(id);else launch(id)}
+function openR(id){sel=id;var s=f(id),h='<h2>'+s.n+'</h2><div class="sub">Leçon 8 · choisis l’épreuve à refaire</div><div class="bons">';
+for(var l=2;l<=7;l++)h+='<button onclick="startR('+l+')"><span>Leçon '+l+'</span><small>record : '+eff(s,l)+' pts</small></button>';
+h+='</div><div class="foot"><button onclick="openList()">← Retour</button><span></span></div>';show(h)}
+function startR(l){cur=l;launch(sel)}
+function show(h){document.getElementById("sheet").innerHTML=h;document.getElementById("modal").className="modal on"}
+function open3(id){sel=id;var s=f(id),a=src(s,cur,rt),h='<h2>'+s.n+'</h2><div class="sub">Leçon '+cur+' · choisis ton essai</div>';
+for(var e=0;e<nes(cur);e++){var o=a[e],d=o&&(o.h||o.m||o.p||o.b!=null||o.c!=null);h+='<button class="essai" onclick="openE('+e+')"><b>Essai '+(e+1)+'</b><span>'+(d?cl(o)+' pts':'—')+'</span></button>'}
+h+='<div class="foot"><button onclick="openList()">← Retour</button><span>Meilleur essai : <b>'+ls(s,cur)+'</b></span></div>';show(h)}
+var ce=0;
+function ge(){var s=f(sel),a=store(s);if(!a[ce])a[ce]=(cur===4?{c:null,h:0}:cur===6?{o:null,n:0}:{m:0,p:0,h:0,b:null});return a[ce]}
+function openE4(e){ce=e;var s=f(sel),o=ge(),h='<h2>'+s.n+' · Essai '+(e+1)+'</h2><div class="sub">Leçon 4</div>';
+h+='<div class="sub">Couleur choisie</div><div class="bons">';
+[["TC","×1"],["Couleur unique","×2"]].forEach(function(c,i){h+='<button class="'+(o.c===i?'on':'')+'" onclick="colr('+i+')">'+c[0]+'<small>'+c[1]+'</small></button>'});
+h+='</div><div class="er" style="margin-top:14px"><b style="width:auto;flex:1">Hauteur atteinte (dégaine 1 à 7)</b><div class="step"><button onclick="stp(\'h\',-1)">−</button><span>'+o.h+'</span><button onclick="stp(\'h\',1)">+</button></div></div>';
+h+='<div class="sub">Dégaine '+o.h+' = '+DEG[o.h]+' pts'+(o.c===1?' × 2':'')+'</div>';
+h+='<div class="foot"><span>Total : <b>'+calc4(o)+'</b> pts</span><button onclick="open3(sel)">Valider</button></div>';show(h)}
+function colr(i){var o=ge();o.c=(o.c===i?null:i);save();render();openE(ce)}
+function openE5(e){ce=e;var s=f(sel),o=ge(),h='<h2>'+s.n+' · Essai '+(e+1)+'</h2><div class="sub">Leçon 5</div>';
+h+='<div class="sub">Bonus (un seul)</div><div class="bons">';
+BON5.forEach(function(b,i){h+='<button class="'+(o.b===i?'on':'')+'" onclick="bon('+i+')">'+b.n+'<small>'+(b.x2?'hauteur ×2':'+'+b.pts)+'</small></button>'});
+h+='</div><div class="er" style="margin-top:14px"><b style="width:auto;flex:1">Hauteur atteinte (dégaine 1 à 7)</b><div class="step"><button onclick="stp(\'h\',-1)">−</button><span>'+o.h+'</span><button onclick="stp(\'h\',1)">+</button></div></div>';
+h+='<div class="sub">Dégaine '+o.h+' = '+DEG[o.h]+' pts'+(o.b===2?' × 2':'')+'</div>';
+h+='<div class="foot"><span>Total : <b>'+calc5(o)+'</b> pts</span><button onclick="open3(sel)">Valider</button></div>';show(h)}
+function openE6(e){ce=e;var s=f(sel),o=ge(),h='<h2>'+s.n+'</h2><div class="sub">Leçon 6 · choisis ton défi</div><div class="bons">';
+OPT6.forEach(function(p,i){h+='<button class="'+(o.o===i?'on':'')+'" onclick="opt('+i+')"><span>'+p.n+'<small style="display:block">'+p.d+'</small></span><small>'+p.t+'</small></button>'});
+h+='</div>';
+if(o.o===0)h+='<div class="er" style="margin-top:14px"><b style="width:auto;flex:1">Enchaînements réussis</b><div class="step"><button onclick="stn(-1)">−</button><span>'+o.n+'</span><button onclick="stn(1)">+</button></div></div>';
+h+='<div class="foot"><span>Total : <b>'+calc6(o)+'</b> pts</span><button onclick="openList()">Valider</button></div>';show(h)}
+function opt(i){var o=ge();o.o=(o.o===i?null:i);save();render();openE(ce)}
+function stn(d){var o=ge();o.n=Math.min(6,Math.max(0,o.n+d));save();render();openE(ce)}
+function openE7(e){ce=e;var s=f(sel),o=ge(),h='<h2>'+s.n+' · Essai '+(e+1)+'</h2><div class="sub">Leçon 7</div>';
+[["m","Grimpe 1 · nombre de mains"],["p","Grimpe 2 · nombre de pieds"],["h","Nombre de dégaines (7 max)"]].forEach(function(r){h+='<div class="er"><b style="width:auto;flex:1">'+r[1]+'</b><div class="step"><button onclick="stp(\''+r[0]+'\',-1)">−</button><span>'+o[r[0]]+'</span><button onclick="stp(\''+r[0]+'\',1)">+</button></div></div>'});
+h+='<div class="sub" style="margin-top:12px">(Grimpe 2 − Grimpe 1) × dégaines</div><div class="foot"><span>Score : <b>'+calc(o,7)+'</b> pts</span><button onclick="open3(sel)">Valider</button></div>';show(h)}
+function openE(e){if(cur===7)return openE7(e);if(cur===6)return openE6(e);if(cur===4)return openE4(e);if(cur===5)return openE5(e);ce=e;var s=f(sel),o=ge(),h='<h2>'+s.n+' · Essai '+(e+1)+'</h2><div class="sub">Leçon '+cur+'</div>';
+[["m","Nombre de mains"],["p","Nombre de pieds"],["h","Hauteur (dégaine atteinte)"]].forEach(function(r){h+='<div class="er"><b style="width:auto;flex:1">'+r[1]+'</b><div class="step"><button onclick="stp(\''+r[0]+'\',-1)">−</button><span>'+o[r[0]]+'</span><button onclick="stp(\''+r[0]+'\',1)">+</button></div></div>'});
+h+='<div class="sub" style="margin-top:12px">Bonus</div><div class="bons">';
+(cur===5?BON5:BON).forEach(function(b,i){h+='<button class="'+(o.b===i?'on':'')+'" onclick="bon('+i+')">'+b.n+'<small>'+(b.x2?'hauteur ×2':'+'+b.pts)+'</small></button>'});
+h+='</div><div class="foot"><span>Total : <b>'+calc(o,cur)+'</b> pts</span><button onclick="open3(sel)">Valider</button></div>';show(h)}
+function stp(k,d){var o=ge();o[k]=Math.min(k==='h'?7:999,Math.max(0,o[k]+d));save();render();openE(ce)}
+function bon(i){var o=ge();o.b=(o.b===i?null:i);save();render();openE(ce)}
+function openT(){show('<h2>Sauvegarde</h2><div class="sub">Résultats de la classe</div><div class="bons"><button onclick="expD()">Exporter les résultats</button><button onclick="impD()">Importer des résultats</button></div><div class="foot"><span></span><button onclick="closeS()">Fermer</button></div>')}
+function expD(){var t=JSON.stringify({v:1,d:S.map(function(s){return{id:s.id,p:s.p,r:s.r||{}}})});
+show('<h2>Exporter</h2><div class="sub">Copie tout le texte ci-dessous, puis colle-le dans le chat.</div><textarea id="tx" readonly rows="8" style="width:100%">'+t.replace(/&/g,"&amp;").replace(/</g,"&lt;")+'</textarea><div class="sub" id="msg"></div><div class="foot"><button onclick="openT()">← Retour</button><button onclick="cpy()">Copier</button></div>')}
+function cpy(){var x=document.getElementById("tx"),ok=false;x.focus();x.select();try{x.setSelectionRange(0,999999)}catch(e){}try{ok=document.execCommand("copy")}catch(e){}
+if(!ok&&navigator.clipboard){try{navigator.clipboard.writeText(x.value);ok=true}catch(e){}}
+document.getElementById("msg").textContent=ok?"Texte copié.":"Texte sélectionné : appuie longuement, puis Copier."}
+function impD(){show('<h2>Importer</h2><div class="sub">Colle ici le texte exporté. Les résultats actuels seront remplacés.</div><textarea id="tx" rows="8" style="width:100%"></textarea><div class="sub" id="msg"></div><div class="foot"><button onclick="openT()">← Retour</button><button onclick="doImp()">Importer</button></div>')}
+function doImp(){var m=document.getElementById("msg");try{var o=JSON.parse(document.getElementById("tx").value.trim());if(o&&typeof o["eps-escalade-v4"]==="string")o=JSON.parse(o["eps-escalade-v4"]);if(Array.isArray(o))o={d:o};if(!o||!Array.isArray(o.d))throw 0;
+o.d.forEach(function(e){var s=f(e.id);if(s){s.p=e.p||{};s.r=e.r||{}}});save();render();m.textContent="Résultats importés."}catch(e){m.textContent="Texte invalide."}}
+function closeS(){if(rt)cur=8;sel=0;document.getElementById("modal").className="modal"}
+render();
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+if('serviceWorker' in navigator)window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw.js')}catch(e){}});
+</script>
+</body>
+</html>

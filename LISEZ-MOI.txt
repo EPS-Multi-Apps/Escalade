@@ -1,0 +1,9 @@
+EPS Escalade – version installable (Android)
+
+1. Mettre ces fichiers à la racine d'un hébergement HTTPS gratuit
+   (ex. GitHub Pages ou Netlify : glisser-déposer le dossier).
+2. Sur la tablette, ouvrir l'adresse dans Chrome : menu ⋮ > « Installer l'application ».
+3. Pour obtenir un fichier .apk : aller sur pwabuilder.com, coller l'adresse
+   du site, choisir « Package for stores » > Android, télécharger le .apk.
+4. Les résultats saisis ailleurs ne suivent pas : exporter avec le bouton ⋯
+   puis importer dans la nouvelle appli.
